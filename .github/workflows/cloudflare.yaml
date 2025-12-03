@@ -9,8 +9,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
       - name: Deploy
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secret.CLOUDFLARE_API_TOKEN }}
-          packageMananger: pnpm
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          packageManager: pnpm
