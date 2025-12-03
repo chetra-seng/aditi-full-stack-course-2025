@@ -1,0 +1,1440 @@
+---
+title: React Core Concepts
+---
+
+# React Core Concepts
+
+Now that you understand the foundations, let's dive deep into React's core concepts and build a real application.
+
+## Learning Objectives
+
+By the end of this section, you will be able to:
+- Create functional components and pass data with props
+- Manage component state using the useState hook
+- Handle user events and form inputs
+- Use useEffect for side effects and lifecycle management
+- Render lists dynamically and apply conditional rendering
+- Build a complete todo application with CRUD operations
+- Persist data using localStorage
+
+---
+
+## Components: Functional vs Class
+
+### Class Components (Legacy)
+```javascript
+class Welcome extends React.Component {
+  render() {
+    return <h1>Hello, {this.props.name}</h1>;
+  }
+}
+```
+
+### Functional Components (Modern - We'll use these!)
+```javascript
+function Welcome(props) {
+  return <h1>Hello, {props.name}</h1>;
+}
+
+// Or with arrow function
+const Welcome = (props) => {
+  return <h1>Hello, {props.name}</h1>;
+};
+
+// Or even shorter
+const Welcome = (props) => <h1>Hello, {props.name}</h1>;
+```
+
+**We focus on functional components because:**
+- Simpler syntax
+- Easier to understand
+- Better performance
+- Modern React standard (with Hooks)
+
+---
+
+## Props: Passing Data Down the Component Tree
+
+### What are Props?
+**Props** (properties) are how you pass data from parent to child components
+
+Think of props like function arguments:
+```javascript
+// Function with arguments
+function greet(name) {
+  return `Hello, ${name}`;
+}
+greet('React'); // "Hello, React"
+
+// Component with props
+function Greet(props) {
+  return <h1>Hello, {props.name}</h1>;
+}
+<Greet name="React" /> // <h1>Hello, React</h1>
+```
+
+---
+
+### Passing Props
+
+```jsx
+// Parent component
+function App() {
+  return (
+    <div>
+      <Welcome name="Alice" age={25} />
+      <Welcome name="Bob" age={30} />
+    </div>
+  );
+}
+
+// Child component
+function Welcome(props) {
+  return (
+    <div>
+      <h1>Hello, {props.name}</h1>
+      <p>Age: {props.age}</p>
+    </div>
+  );
+}
+```
+
+---
+
+### Destructuring Props
+
+```jsx
+// Instead of using props.name, props.age
+function Welcome(props) {
+  return (
+    <div>
+      <h1>Hello, {props.name}</h1>
+      <p>Age: {props.age}</p>
+    </div>
+  );
+}
+
+// Destructure in parameter
+function Welcome({ name, age }) {
+  return (
+    <div>
+      <h1>Hello, {name}</h1>
+      <p>Age: {age}</p>
+    </div>
+  );
+}
+```
+
+---
+
+### Props Can Be Anything
+
+```jsx
+// Strings
+<Button text="Click me" />
+
+// Numbers
+<Counter initial={0} max={10} />
+
+// Booleans
+<Task completed={true} />
+
+// Arrays
+<List items={['Item 1', 'Item 2']} />
+
+// Objects
+<User data={{ name: 'Alice', email: 'alice@example.com' }} />
+
+// Functions
+<Button onClick={() => alert('Clicked!')} />
+
+// Components
+<Container content={<div>Hello</div>} />
+```
+
+---
+
+### Props are Read-Only
+
+```jsx
+function Welcome(props) {
+  // ❌ Wrong - Never modify props
+  props.name = 'Changed';
+
+  // ✅ Correct - Props are read-only
+  return <h1>Hello, {props.name}</h1>;
+}
+```
+
+**Rule:** All React components must act like pure functions with respect to their props.
+
+---
+
+## State: useState Hook in Depth
+
+### What is State?
+**State** is data that changes over time in your component
+
+The difference between props and state:
+- **Props**: Passed from parent (like function arguments)
+- **State**: Managed within component (like variables)
+
+---
+
+### Using useState
+
+```jsx
+import { useState } from 'react';
+
+function Counter() {
+  // Declare state variable
+  const [count, setCount] = useState(0);
+  //     ↑        ↑           ↑
+  //   current  function   initial
+  //   value    to update   value
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>
+        Increment
+      </button>
+    </div>
+  );
+}
+```
+
+---
+
+### Multiple State Variables
+
+```jsx
+function TaskForm() {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState('medium');
+  const [completed, setCompleted] = useState(false);
+
+  return (
+    <form>
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+      <textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+      <select
+        value={priority}
+        onChange={(e) => setPriority(e.target.value)}
+      >
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+    </form>
+  );
+}
+```
+
+---
+
+### State Updates are Asynchronous
+
+```jsx
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  const handleClick = () => {
+    setCount(count + 1);
+    console.log(count); // ❌ Still shows old value!
+    // State updates are async
+  };
+
+  return <button onClick={handleClick}>Count: {count}</button>;
+}
+```
+
+---
+
+### Updating State Based on Previous State
+
+```jsx
+// ❌ Wrong - Can miss updates
+setCount(count + 1);
+setCount(count + 1); // Might not work as expected
+
+// ✅ Correct - Use function form
+setCount(prevCount => prevCount + 1);
+setCount(prevCount => prevCount + 1); // Works correctly
+```
+
+---
+
+### State with Objects
+
+```jsx
+function UserProfile() {
+  const [user, setUser] = useState({
+    name: '',
+    email: '',
+    age: 0
+  });
+
+  // ❌ Wrong - Loses other properties
+  const updateName = (name) => {
+    setUser({ name: name });
+  };
+
+  // ✅ Correct - Spread existing properties
+  const updateName = (name) => {
+    setUser(prevUser => ({
+      ...prevUser,
+      name: name
+    }));
+  };
+
+  return (
+    <input
+      value={user.name}
+      onChange={(e) => updateName(e.target.value)}
+    />
+  );
+}
+```
+
+---
+
+## Event Handling in React
+
+### Basic Event Handling
+
+```jsx
+function Button() {
+  const handleClick = () => {
+    alert('Button clicked!');
+  };
+
+  return <button onClick={handleClick}>Click me</button>;
+}
+
+// Or inline
+function Button() {
+  return (
+    <button onClick={() => alert('Button clicked!')}>
+      Click me
+    </button>
+  );
+}
+```
+
+---
+
+### Common Events
+
+```jsx
+function EventExamples() {
+  return (
+    <div>
+      {/* Click events */}
+      <button onClick={() => console.log('Clicked')}>
+        Click
+      </button>
+
+      {/* Input events */}
+      <input
+        onChange={(e) => console.log(e.target.value)}
+        onFocus={() => console.log('Focused')}
+        onBlur={() => console.log('Blurred')}
+      />
+
+      {/* Form events */}
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        console.log('Submitted');
+      }}>
+        <button type="submit">Submit</button>
+      </form>
+
+      {/* Mouse events */}
+      <div
+        onMouseEnter={() => console.log('Mouse entered')}
+        onMouseLeave={() => console.log('Mouse left')}
+      >
+        Hover me
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+### Event Object
+
+```jsx
+function InputExample() {
+  const [value, setValue] = useState('');
+
+  const handleChange = (event) => {
+    // Event object contains useful information
+    console.log(event.target.value);  // Current input value
+    console.log(event.target.name);   // Input name attribute
+    console.log(event.type);          // Event type (e.g., 'change')
+
+    setValue(event.target.value);
+  };
+
+  return (
+    <input
+      name="username"
+      value={value}
+      onChange={handleChange}
+    />
+  );
+}
+```
+
+---
+
+## Controlled Components Pattern
+
+### What is a Controlled Component?
+
+A form element whose value is controlled by React state
+
+```jsx
+function ControlledInput() {
+  const [value, setValue] = useState('');
+
+  // ❌ Uncontrolled - React doesn't know the value
+  return <input />;
+
+  // ✅ Controlled - React controls the value
+  return (
+    <input
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+    />
+  );
+}
+```
+
+---
+
+### Complete Form Example
+
+```jsx
+function TaskForm() {
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    priority: 'medium'
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Form data:', formData);
+    // Process form data here
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        name="title"
+        value={formData.title}
+        onChange={handleChange}
+        placeholder="Task title"
+      />
+      <textarea
+        name="description"
+        value={formData.description}
+        onChange={handleChange}
+        placeholder="Description"
+      />
+      <select
+        name="priority"
+        value={formData.priority}
+        onChange={handleChange}
+      >
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+      <button type="submit">Add Task</button>
+    </form>
+  );
+}
+```
+
+---
+
+## useEffect Hook: Side Effects and Lifecycle
+
+### What is useEffect?
+
+**useEffect** lets you perform side effects in function components:
+- Fetching data
+- Subscriptions
+- Manually changing the DOM
+- Timers
+- localStorage operations
+
+---
+
+### Basic useEffect
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function Example() {
+  const [count, setCount] = useState(0);
+
+  // Runs after every render
+  useEffect(() => {
+    console.log('Component rendered or updated');
+    document.title = `Count: ${count}`;
+  });
+
+  return (
+    <button onClick={() => setCount(count + 1)}>
+      Count: {count}
+    </button>
+  );
+}
+```
+
+---
+
+### useEffect with Dependencies
+
+```jsx
+function Example() {
+  const [count, setCount] = useState(0);
+  const [name, setName] = useState('');
+
+  // Runs only when count changes
+  useEffect(() => {
+    console.log('Count changed:', count);
+  }, [count]);
+
+  // Runs only on mount (once)
+  useEffect(() => {
+    console.log('Component mounted');
+  }, []);
+
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>
+        Count: {count}
+      </button>
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+    </div>
+  );
+}
+```
+
+---
+
+### useEffect with Cleanup
+
+```jsx
+function Timer() {
+  const [seconds, setSeconds] = useState(0);
+
+  useEffect(() => {
+    // Set up interval
+    const interval = setInterval(() => {
+      setSeconds(prev => prev + 1);
+    }, 1000);
+
+    // Cleanup function
+    return () => {
+      clearInterval(interval);
+      console.log('Timer cleaned up');
+    };
+  }, []); // Empty array = run once on mount
+
+  return <div>Seconds: {seconds}</div>;
+}
+```
+
+---
+
+### localStorage with useEffect
+
+```jsx
+function TaskList() {
+  const [tasks, setTasks] = useState([]);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const savedTasks = localStorage.getItem('tasks');
+    if (savedTasks) {
+      setTasks(JSON.parse(savedTasks));
+    }
+  }, []);
+
+  // Save to localStorage when tasks change
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
+
+  return (
+    <div>
+      {tasks.map(task => (
+        <div key={task.id}>{task.title}</div>
+      ))}
+    </div>
+  );
+}
+```
+
+---
+
+## Rendering Lists with .map()
+
+### Basic List Rendering
+
+```jsx
+function TaskList() {
+  const tasks = [
+    { id: 1, title: 'Learn React' },
+    { id: 2, title: 'Build App' },
+    { id: 3, title: 'Deploy' }
+  ];
+
+  return (
+    <ul>
+      {tasks.map(task => (
+        <li key={task.id}>{task.title}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+---
+
+### Why Keys are Important
+
+```jsx
+// ❌ Wrong - No key
+{tasks.map(task => (
+  <li>{task.title}</li>
+))}
+
+// ❌ Wrong - Index as key (avoid if list changes)
+{tasks.map((task, index) => (
+  <li key={index}>{task.title}</li>
+))}
+
+// ✅ Correct - Unique ID as key
+{tasks.map(task => (
+  <li key={task.id}>{task.title}</li>
+))}
+```
+
+**Why?** Keys help React identify which items have changed, been added, or removed. This makes updates efficient.
+
+---
+
+### Complete List Example
+
+```jsx
+function TaskList() {
+  const [tasks, setTasks] = useState([
+    { id: 1, title: 'Learn React', completed: false },
+    { id: 2, title: 'Build App', completed: false },
+    { id: 3, title: 'Deploy', completed: true }
+  ]);
+
+  const toggleTask = (id) => {
+    setTasks(tasks.map(task =>
+      task.id === id
+        ? { ...task, completed: !task.completed }
+        : task
+    ));
+  };
+
+  const deleteTask = (id) => {
+    setTasks(tasks.filter(task => task.id !== id));
+  };
+
+  return (
+    <ul>
+      {tasks.map(task => (
+        <li key={task.id}>
+          <input
+            type="checkbox"
+            checked={task.completed}
+            onChange={() => toggleTask(task.id)}
+          />
+          <span style={{
+            textDecoration: task.completed ? 'line-through' : 'none'
+          }}>
+            {task.title}
+          </span>
+          <button onClick={() => deleteTask(task.id)}>
+            Delete
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
+
+---
+
+## Conditional Rendering Patterns
+
+### If/Else with Variables
+
+```jsx
+function Greeting({ isLoggedIn }) {
+  let content;
+
+  if (isLoggedIn) {
+    content = <h1>Welcome back!</h1>;
+  } else {
+    content = <h1>Please sign in</h1>;
+  }
+
+  return <div>{content}</div>;
+}
+```
+
+---
+
+### Ternary Operator
+
+```jsx
+function Greeting({ isLoggedIn }) {
+  return (
+    <div>
+      {isLoggedIn ? (
+        <h1>Welcome back!</h1>
+      ) : (
+        <h1>Please sign in</h1>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+### Logical && Operator
+
+```jsx
+function TaskList({ tasks }) {
+  return (
+    <div>
+      <h2>Tasks</h2>
+      {tasks.length === 0 && (
+        <p>No tasks yet. Add one!</p>
+      )}
+      {tasks.length > 0 && (
+        <ul>
+          {tasks.map(task => (
+            <li key={task.id}>{task.title}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+### Early Return
+
+```jsx
+function TaskItem({ task }) {
+  if (!task) {
+    return <div>No task found</div>;
+  }
+
+  if (task.deleted) {
+    return null; // Render nothing
+  }
+
+  return (
+    <div>
+      <h3>{task.title}</h3>
+      <p>{task.description}</p>
+    </div>
+  );
+}
+```
+
+---
+
+## Live Demo: Building a Simple Counter
+
+Let's build a counter together to see all concepts in action!
+
+```jsx
+import { useState } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  const [step, setStep] = useState(1);
+
+  const increment = () => setCount(count + step);
+  const decrement = () => setCount(count - step);
+  const reset = () => setCount(0);
+
+  return (
+    <div>
+      <h1>Counter: {count}</h1>
+
+      <div>
+        <label>
+          Step:
+          <input
+            type="number"
+            value={step}
+            onChange={(e) => setStep(Number(e.target.value))}
+          />
+        </label>
+      </div>
+
+      <div>
+        <button onClick={decrement}>-{step}</button>
+        <button onClick={reset}>Reset</button>
+        <button onClick={increment}>+{step}</button>
+      </div>
+
+      {count > 10 && (
+        <p style={{ color: 'green' }}>Great job counting!</p>
+      )}
+
+      {count < 0 && (
+        <p style={{ color: 'red' }}>Negative numbers!</p>
+      )}
+    </div>
+  );
+}
+
+export default Counter;
+```
+
+---
+
+# 🍽️ Lunch Break
+
+---
+
+# Practice Session: Building TaskMaster v1
+
+## Project Briefing
+
+### TaskMaster v1 Requirements
+
+**Core Features:**
+- Display list of tasks
+- Add new task with title and description
+- Mark task as complete/incomplete
+- Delete tasks
+- Filter tasks (All, Active, Completed)
+- Edit existing tasks
+- Persist to localStorage
+- Basic styling
+
+---
+
+### Technical Requirements
+
+- **Minimum 3 components**
+- Use **useState** for state management
+- Use **useEffect** for localStorage
+- Proper event handling
+- **Key prop** for list items
+
+---
+
+### Suggested Component Structure
+
+```
+App
+├── TaskForm (add new task)
+├── TaskFilter (filter buttons)
+└── TaskList
+    └── TaskItem (individual task)
+```
+
+---
+
+### Data Structure
+
+```javascript
+const task = {
+  id: 1,                    // unique identifier
+  title: 'Learn React',     // task title
+  description: 'Study...',  // task description
+  completed: false,         // completion status
+  createdAt: Date.now()     // timestamp
+};
+
+const tasks = [task1, task2, task3];
+```
+
+---
+
+## Building Phase 1
+
+### Step 1: Project Setup
+
+```bash
+# Create React app
+npm create vite@latest taskmaster -- --template react
+cd taskmaster
+npm install
+npm run dev
+```
+
+---
+
+### Step 2: Create App Component Structure
+
+```jsx
+// App.jsx
+import { useState, useEffect } from 'react';
+import './App.css';
+
+function App() {
+  const [tasks, setTasks] = useState([]);
+  const [filter, setFilter] = useState('all');
+
+  return (
+    <div className="app">
+      <h1>TaskMaster</h1>
+      {/* Components will go here */}
+    </div>
+  );
+}
+
+export default App;
+```
+
+---
+
+### Step 3: Create TaskForm Component
+
+```jsx
+// components/TaskForm.jsx
+import { useState } from 'react';
+
+function TaskForm({ onAddTask }) {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!title.trim()) return;
+
+    const newTask = {
+      id: Date.now(),
+      title: title.trim(),
+      description: description.trim(),
+      completed: false,
+      createdAt: Date.now()
+    };
+
+    onAddTask(newTask);
+    setTitle('');
+    setDescription('');
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Task title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
+      />
+      <textarea
+        placeholder="Task description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+      <button type="submit">Add Task</button>
+    </form>
+  );
+}
+
+export default TaskForm;
+```
+
+---
+
+### Step 4: Create TaskList Component
+
+```jsx
+// components/TaskList.jsx
+import TaskItem from './TaskItem';
+
+function TaskList({ tasks, onToggleTask, onDeleteTask, onEditTask }) {
+  if (tasks.length === 0) {
+    return <p>No tasks yet. Add one above!</p>;
+  }
+
+  return (
+    <ul className="task-list">
+      {tasks.map(task => (
+        <TaskItem
+          key={task.id}
+          task={task}
+          onToggle={onToggleTask}
+          onDelete={onDeleteTask}
+          onEdit={onEditTask}
+        />
+      ))}
+    </ul>
+  );
+}
+
+export default TaskList;
+```
+
+---
+
+### Step 5: Create TaskItem Component
+
+```jsx
+// components/TaskItem.jsx
+import { useState } from 'react';
+
+function TaskItem({ task, onToggle, onDelete, onEdit }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(task.title);
+  const [editDescription, setEditDescription] = useState(task.description);
+
+  const handleEdit = () => {
+    if (editTitle.trim()) {
+      onEdit(task.id, {
+        title: editTitle.trim(),
+        description: editDescription.trim()
+      });
+      setIsEditing(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <li className="task-item editing">
+        <input
+          type="text"
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+        />
+        <textarea
+          value={editDescription}
+          onChange={(e) => setEditDescription(e.target.value)}
+        />
+        <button onClick={handleEdit}>Save</button>
+        <button onClick={() => setIsEditing(false)}>Cancel</button>
+      </li>
+    );
+  }
+
+  return (
+    <li className={`task-item ${task.completed ? 'completed' : ''}`}>
+      <input
+        type="checkbox"
+        checked={task.completed}
+        onChange={() => onToggle(task.id)}
+      />
+      <div className="task-content">
+        <h3>{task.title}</h3>
+        {task.description && <p>{task.description}</p>}
+      </div>
+      <div className="task-actions">
+        <button onClick={() => setIsEditing(true)}>Edit</button>
+        <button onClick={() => onDelete(task.id)}>Delete</button>
+      </div>
+    </li>
+  );
+}
+
+export default TaskItem;
+```
+
+---
+
+### Step 6: Create TaskFilter Component
+
+```jsx
+// components/TaskFilter.jsx
+function TaskFilter({ currentFilter, onFilterChange }) {
+  const filters = ['all', 'active', 'completed'];
+
+  return (
+    <div className="task-filter">
+      {filters.map(filter => (
+        <button
+          key={filter}
+          className={currentFilter === filter ? 'active' : ''}
+          onClick={() => onFilterChange(filter)}
+        >
+          {filter.charAt(0).toUpperCase() + filter.slice(1)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export default TaskFilter;
+```
+
+---
+
+### Step 7: Connect Everything in App
+
+```jsx
+// App.jsx
+import { useState, useEffect } from 'react';
+import TaskForm from './components/TaskForm';
+import TaskList from './components/TaskList';
+import TaskFilter from './components/TaskFilter';
+import './App.css';
+
+function App() {
+  const [tasks, setTasks] = useState([]);
+  const [filter, setFilter] = useState('all');
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const savedTasks = localStorage.getItem('tasks');
+    if (savedTasks) {
+      setTasks(JSON.parse(savedTasks));
+    }
+  }, []);
+
+  // Save to localStorage when tasks change
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
+
+  const addTask = (task) => {
+    setTasks([...tasks, task]);
+  };
+
+  const toggleTask = (id) => {
+    setTasks(tasks.map(task =>
+      task.id === id
+        ? { ...task, completed: !task.completed }
+        : task
+    ));
+  };
+
+  const deleteTask = (id) => {
+    setTasks(tasks.filter(task => task.id !== id));
+  };
+
+  const editTask = (id, updates) => {
+    setTasks(tasks.map(task =>
+      task.id === id
+        ? { ...task, ...updates }
+        : task
+    ));
+  };
+
+  // Filter tasks based on current filter
+  const filteredTasks = tasks.filter(task => {
+    if (filter === 'active') return !task.completed;
+    if (filter === 'completed') return task.completed;
+    return true; // 'all'
+  });
+
+  return (
+    <div className="app">
+      <h1>TaskMaster</h1>
+      <TaskForm onAddTask={addTask} />
+      <TaskFilter
+        currentFilter={filter}
+        onFilterChange={setFilter}
+      />
+      <TaskList
+        tasks={filteredTasks}
+        onToggleTask={toggleTask}
+        onDeleteTask={deleteTask}
+        onEditTask={editTask}
+      />
+      <div className="task-stats">
+        <p>Total: {tasks.length}</p>
+        <p>Active: {tasks.filter(t => !t.completed).length}</p>
+        <p>Completed: {tasks.filter(t => t.completed).length}</p>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+---
+
+## ☕ Break (15 minutes)
+
+---
+
+## Building Phase 2
+
+### Tasks to Complete
+
+1. ✅ Toggle complete/incomplete
+2. ✅ Delete task
+3. ✅ Edit task (inline or modal)
+4. ✅ Filter functionality
+5. ✅ localStorage integration
+6. ✅ CSS styling
+
+### Focus Areas:
+- Debug any issues
+- Add validation
+- Improve user experience
+- Add CSS styling
+- Test all features
+
+---
+
+### Basic CSS Styling
+
+```css
+/* App.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  background-color: #f5f5f5;
+  padding: 20px;
+}
+
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+/* TaskForm */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+input[type="text"],
+textarea {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+/* TaskFilter */
+.task-filter {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.task-filter button {
+  flex: 1;
+  background: #e9ecef;
+  color: #333;
+}
+
+.task-filter button.active {
+  background: #007bff;
+  color: white;
+}
+
+/* TaskList */
+.task-list {
+  list-style: none;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.task-item.completed .task-content h3 {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.task-content {
+  flex: 1;
+}
+
+.task-content h3 {
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.task-content p {
+  color: #666;
+  font-size: 14px;
+}
+
+.task-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.task-actions button {
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+/* Task Stats */
+.task-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 5px;
+  margin-top: 30px;
+}
+
+.task-stats p {
+  color: #666;
+  font-weight: bold;
+}
+```
+
+---
+
+## Code Review & Reflection
+
+---
+
+### Common Issues & Solutions
+
+**Issue 1: State not updating**
+```jsx
+// ❌ Wrong
+tasks[0].completed = true;
+
+// ✅ Correct
+setTasks(tasks.map(task =>
+  task.id === targetId
+    ? { ...task, completed: true }
+    : task
+));
+```
+
+**Issue 2: Missing keys in lists**
+```jsx
+// ❌ Wrong
+{tasks.map(task => <li>{task.title}</li>)}
+
+// ✅ Correct
+{tasks.map(task => <li key={task.id}>{task.title}</li>)}
+```
+
+---
+
+**Issue 3: Form not preventing default**
+```jsx
+// ❌ Wrong
+const handleSubmit = () => {
+  addTask(newTask);
+};
+
+// ✅ Correct
+const handleSubmit = (e) => {
+  e.preventDefault();
+  addTask(newTask);
+};
+```
+
+**Issue 4: Not validating input**
+```jsx
+// ❌ Wrong
+onAddTask({ title, description });
+
+// ✅ Correct
+if (!title.trim()) return;
+onAddTask({
+  title: title.trim(),
+  description: description.trim()
+});
+```
+
+---
+
+### Code Quality Checklist
+
+✅ Components are properly organized
+✅ Functions have descriptive names
+✅ State is updated immutably
+✅ Event handlers prevent default when needed
+✅ Forms validate input
+✅ Lists have proper keys
+✅ Code is readable and well-formatted
+✅ localStorage works correctly
+✅ No console errors
+
+---
+

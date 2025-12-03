@@ -1,0 +1,393 @@
+---
+title: React Foundations
+---
+
+# React Foundations
+
+Welcome to React! This section covers the fundamental concepts you need to understand before diving into React development.
+
+## Learning Objectives
+
+By the end of this section, you will be able to:
+- Explain what React is and when to use it
+- Understand the Virtual DOM and how React optimizes rendering
+- Break down UIs into component-based architecture
+- Apply modern JavaScript (ES6+) features in React development
+- Write and understand JSX syntax
+
+---
+
+## What is React and Why Use It?
+
+### The Problem
+- Traditional web development: Direct DOM manipulation
+- Complex UIs become hard to maintain
+- State and UI easily get out of sync
+- Code becomes repetitive and error-prone
+
+### The React Solution
+- **Declarative**: Describe what you want, not how to get it
+- **Component-Based**: Break UI into reusable pieces
+- **Unidirectional Data Flow**: Predictable state management
+- **Virtual DOM**: Fast and efficient updates
+
+---
+
+## Virtual DOM and Reconciliation
+
+### How Traditional DOM Works
+```javascript
+// Manual DOM manipulation
+document.getElementById('counter').innerHTML = count;
+document.getElementById('message').style.display = 'block';
+```
+
+### How React Works
+```javascript
+// Declarative - React handles the DOM
+<div>{count}</div>
+{showMessage && <div>Message</div>}
+```
+
+**Virtual DOM Process:**
+1. React creates a virtual representation of the UI
+2. When state changes, React creates a new virtual DOM
+3. React compares (diffs) the two versions
+4. Only necessary changes are applied to real DOM
+5. Result: Fast and efficient updates
+
+---
+
+## Component-Based Architecture
+
+### What is a Component?
+A component is a **reusable, self-contained piece of UI**
+
+Think of it like LEGO blocks:
+- Each block has a specific purpose
+- Blocks can be combined to build complex structures
+- Blocks can be reused in different places
+
+### Example
+```
+App
+├── Header
+│   ├── Logo
+│   └── Navigation
+├── TaskList
+│   ├── TaskItem
+│   ├── TaskItem
+│   └── TaskItem
+└── Footer
+```
+
+---
+
+## JavaScript Fundamentals Review
+
+### Arrow Functions
+```javascript
+// Traditional function
+function add(a, b) {
+  return a + b;
+}
+
+// Arrow function
+const add = (a, b) => a + b;
+
+// Arrow function with body
+const addAndLog = (a, b) => {
+  const result = a + b;
+  console.log(result);
+  return result;
+};
+```
+
+---
+
+### Array Methods
+
+#### map() - Transform each element
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+const doubled = numbers.map(num => num * 2);
+// [2, 4, 6, 8, 10]
+
+const tasks = [
+  { id: 1, title: 'Learn React' },
+  { id: 2, title: 'Build App' }
+];
+const titles = tasks.map(task => task.title);
+// ['Learn React', 'Build App']
+```
+
+#### filter() - Keep elements that match condition
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+const evens = numbers.filter(num => num % 2 === 0);
+// [2, 4]
+
+const tasks = [
+  { id: 1, completed: true },
+  { id: 2, completed: false }
+];
+const activeTasks = tasks.filter(task => !task.completed);
+```
+
+---
+
+#### reduce() - Combine elements into single value
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+const sum = numbers.reduce((total, num) => total + num, 0);
+// 15
+
+const tasks = [
+  { id: 1, completed: true },
+  { id: 2, completed: false },
+  { id: 3, completed: true }
+];
+const completedCount = tasks.reduce((count, task) =>
+  task.completed ? count + 1 : count, 0
+);
+// 2
+```
+
+---
+
+### Destructuring
+
+#### Object Destructuring
+```javascript
+const task = {
+  id: 1,
+  title: 'Learn React',
+  completed: false,
+  priority: 'high'
+};
+
+// Instead of:
+const title = task.title;
+const completed = task.completed;
+
+// Use destructuring:
+const { title, completed } = task;
+
+// With renaming:
+const { title: taskTitle, completed: isDone } = task;
+```
+
+---
+
+#### Array Destructuring
+```javascript
+const colors = ['red', 'green', 'blue'];
+
+// Instead of:
+const first = colors[0];
+const second = colors[1];
+
+// Use destructuring:
+const [first, second, third] = colors;
+
+// Skip elements:
+const [first, , third] = colors;
+```
+
+---
+
+### Spread Operator
+
+#### Array Spread
+```javascript
+const arr1 = [1, 2, 3];
+const arr2 = [4, 5, 6];
+
+// Combine arrays
+const combined = [...arr1, ...arr2];
+// [1, 2, 3, 4, 5, 6]
+
+// Copy array
+const copy = [...arr1];
+
+// Add to beginning
+const withNew = [0, ...arr1];
+// [0, 1, 2, 3]
+```
+
+---
+
+#### Object Spread
+```javascript
+const task = {
+  id: 1,
+  title: 'Learn React',
+  completed: false
+};
+
+// Copy object
+const taskCopy = { ...task };
+
+// Update property
+const updatedTask = {
+  ...task,
+  completed: true
+};
+
+// Add property
+const taskWithPriority = {
+  ...task,
+  priority: 'high'
+};
+```
+
+---
+
+### Template Literals
+```javascript
+const name = 'React';
+const version = 18;
+
+// Instead of:
+const message = 'Welcome to ' + name + ' version ' + version;
+
+// Use template literals:
+const message = `Welcome to ${name} version ${version}`;
+
+// Multi-line strings
+const html = `
+  <div>
+    <h1>${name}</h1>
+    <p>Version: ${version}</p>
+  </div>
+`;
+
+// Expressions in templates
+const greeting = `You have ${tasks.length} tasks remaining`;
+```
+
+---
+
+## JSX Syntax and Transpilation
+
+### What is JSX?
+**JSX** = JavaScript XML
+A syntax extension that lets you write HTML-like code in JavaScript
+
+```jsx
+// This is JSX
+const element = <h1>Hello, React!</h1>;
+
+// It looks like HTML, but it's JavaScript
+```
+
+---
+
+### JSX is Transpiled to JavaScript
+
+```jsx
+// You write:
+const element = <h1 className="title">Hello, React!</h1>;
+
+// Babel converts it to:
+const element = React.createElement(
+  'h1',
+  { className: 'title' },
+  'Hello, React!'
+);
+```
+
+---
+
+### JSX Rules
+
+1. **Must return a single parent element**
+```jsx
+// ❌ Wrong
+return (
+  <h1>Title</h1>
+  <p>Paragraph</p>
+);
+
+// ✅ Correct
+return (
+  <div>
+    <h1>Title</h1>
+    <p>Paragraph</p>
+  </div>
+);
+
+// ✅ Or use Fragment
+return (
+  <>
+    <h1>Title</h1>
+    <p>Paragraph</p>
+  </>
+);
+```
+
+---
+
+2. **Use camelCase for attributes**
+```jsx
+// ❌ Wrong (HTML attribute)
+<div class="container" onclick="handleClick()">
+
+// ✅ Correct (JSX)
+<div className="container" onClick={handleClick}>
+```
+
+---
+
+3. **JavaScript expressions in curly braces**
+```jsx
+const name = 'React';
+const count = 5;
+
+<div>
+  <h1>{name}</h1>
+  <p>You have {count} tasks</p>
+  <p>Double: {count * 2}</p>
+  <p>{count > 0 ? 'Tasks remaining' : 'All done!'}</p>
+</div>
+```
+
+---
+
+4. **All tags must be closed**
+```jsx
+// ❌ Wrong
+<img src="image.jpg">
+<br>
+<input type="text">
+
+// ✅ Correct
+<img src="image.jpg" />
+<br />
+<input type="text" />
+```
+
+---
+
+## Discussion: When to Use React vs Vanilla JavaScript
+
+### Use Vanilla JavaScript when:
+- Simple static websites
+- Small interactive features
+- Learning fundamentals
+- Performance is critical (rare cases)
+
+### Use React when:
+- Complex user interfaces
+- Dynamic data that changes frequently
+- Reusable components needed
+- Team collaboration
+- Large-scale applications
+- Need ecosystem (routing, state management)
+
+---
+
+## ☕ Break (15 minutes)
+
+---
+
